@@ -21,14 +21,14 @@ class Game:
             ai_name = self.name_generator.get_random_name()
             self.players.append(AIPlayer(ai_name))
 
-      def start_game(self):
+    def start_game(self):
         self.renderer.display_welcome_message()
         self.renderer.display_players(self.players)
-        
+
         # Determinar el jugador inicial
         starting_player = self.determine_starting_player()
         self.current_player_index = self.players.index(starting_player)
-        
+
         self.renderer.display_starting_player(starting_player)
 
         while not self.check_game_over():
@@ -39,7 +39,7 @@ class Game:
 
     def play_round(self):
         self.renderer.display_round_start()
-        
+
         for player in self.players:
             player.roll_dice()
 
@@ -82,21 +82,23 @@ class Game:
 
     def handle_doubt(self) -> bool:
         total_dice = sum(len(player.dice) for player in self.players)
-        count = sum(dice.count(self.current_bet[1]) for player in self.players for dice in player.get_dice_values())
-        
+        count = sum(dice.count(
+            self.current_bet[1]) for player in self.players for dice in player.get_dice_values())
+
         if count >= self.current_bet[0]:
             loser = self.players[self.current_player_index]
         else:
             loser = self.players[self.current_player_index - self.direction]
-        
+
         loser.remove_die()
         self.renderer.display_doubt_result(loser, count, self.current_bet)
         return True
 
     def handle_calzo(self):
         total_dice = sum(len(player.dice) for player in self.players)
-        count = sum(dice.count(self.current_bet[1]) for player in self.players for dice in player.get_dice_values())
-        
+        count = sum(dice.count(
+            self.current_bet[1]) for player in self.players for dice in player.get_dice_values())
+
         current_player = self.players[self.current_player_index]
         if count == self.current_bet[0]:
             current_player.add_die()
