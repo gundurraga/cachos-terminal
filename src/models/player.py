@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Optional
 from src.models.dice import Dice
 
 
@@ -22,6 +22,9 @@ class Player:
     def add_die(self) -> None:
         if len(self.dice) < 5:
             self.dice.append(Dice())
+
+    def make_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
+        raise NotImplementedError("Subclasses must implement make_bet method")
 
     def __str__(self) -> str:
         return f"{self.name} (Dice: {len(self.dice)})"

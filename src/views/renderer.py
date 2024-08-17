@@ -18,12 +18,11 @@ class Renderer:
     def display_players(self, players):
         table = Table(title="Jugadores")
         table.add_column("Nombre", style="cyan")
-        table.add_column("Tipo", style="magenta")
         table.add_column("Dados", justify="right", style="green")
 
         for player in players:
             player_type = "Humano" if player.__class__.__name__ == "HumanPlayer" else "IA"
-            table.add_row(player.name, player_type, str(len(player.dice)))
+            table.add_row(player.name, str(len(player.dice)))
 
         self.console.print(table)
 
@@ -33,6 +32,10 @@ class Renderer:
 
     def display_round_start(self):
         self.console.rule("[bold blue]Nueva Ronda[/bold blue]")
+
+    def display_first_turn_message(self):
+        self.console.print(
+            "[bold yellow]Primer turno: Solo puedes apostar. La apuesta mínima es 1 dado.[/bold yellow]")
 
     def display_current_player(self, player):
         self.console.print(f"\nTurno de [bold]{player.name}[/bold]")

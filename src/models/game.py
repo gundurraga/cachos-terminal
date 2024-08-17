@@ -14,6 +14,7 @@ class Game:
         self.direction: int = 1  # 1 para sentido horario, -1 para antihorario
         self.name_generator = NameGenerator()
         self.renderer = renderer
+        self.is_first_turn: bool = True
 
         # Agregar jugador humano
         self.players.append(HumanPlayer("Jugador Humano"))
@@ -54,7 +55,12 @@ class Game:
             if isinstance(current_player, HumanPlayer):
                 self.renderer.display_dice(current_player.get_dice_values())
 
-            action = current_player.decide_action(self.current_bet)
+            if self.is_first_turn:
+                action = 'subir'
+                self.renderer.display_first_turn_message()
+            else:
+                action = current_player.decide_action(self.current_bet)
+
             self.renderer.display_action(current_player, action)
 
             if action == 'dudar':
@@ -70,12 +76,15 @@ class Game:
                     continue
                 round_over = self.handle_calzo()
             else:  # subir
-                new_bet = current_player.make_bet(self.current_bet)
-                if new_bet:
+                new_bet = current_player.make_bet(
+                    self.current_bet, self.is_first_turn)
+                if new_bet and (not self.is_first_turn or new_bet[0] >= 1):
                     self.current_bet = new_bet
                     self.renderer.display_bet(current_player, new_bet)
+                    self.is_first_turn = False
                 else:
-                    self.renderer.display_error("Apuesta inválida.")
+                    self.renderer.display_error(
+                        "Apuesta inválida. En el primer turno, la apuesta debe ser de al menos 1 dado.")
                     continue
 
             if not round_over:

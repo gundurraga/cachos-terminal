@@ -1,16 +1,18 @@
 import random
 import time
 from src.models.player import Player
+from typing import Tuple, Optional
 
 
 class AIPlayer(Player):
     def __init__(self, name: str):
         super().__init__(name)
 
-    def make_bet(self, current_bet):
+    def make_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
         self._simulate_thinking()
-        # Implementación simple de IA para hacer apuestas
-        if current_bet is None:
+        if is_first_turn:
+            return (random.randint(1, 3), random.randint(1, 6))
+        elif current_bet is None:
             return (random.randint(1, 3), random.randint(1, 6))
         else:
             if random.random() < 0.7:  # 70% de probabilidad de subir la apuesta
@@ -20,10 +22,9 @@ class AIPlayer(Player):
 
     def decide_action(self, current_bet):
         self._simulate_thinking()
-        # Implementación simple de IA para decidir acciones
         actions = ['subir', 'dudar', 'calzar']
         return random.choice(actions)
 
     def _simulate_thinking(self):
-        thinking_time = random.uniform(3, 7)
+        thinking_time = random.uniform(2, 6)
         time.sleep(thinking_time)

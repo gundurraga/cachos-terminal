@@ -1,17 +1,23 @@
+from typing import Tuple, Optional
+
+
 class InputHandler:
-    def get_bet(self, current_bet):
+    def get_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
         if current_bet:
             current_quantity, current_value = current_bet
         else:
-            current_quantity, current_value = 0, 0
+            current_quantity, current_value = (1 if is_first_turn else 0), 0
 
         while True:
             try:
-                quantity = int(
-                    input(f"Ingresa la cantidad de dados (mínimo {current_quantity}): "))
-                if quantity >= current_quantity:
+                quantity = int(input(
+                    f"Ingresa la cantidad de dados (mínimo {'1' if is_first_turn else str(current_quantity)}): "))
+                if is_first_turn and quantity < 1:
+                    print("En el primer turno, la apuesta mínima es 1 dado.")
+                elif quantity >= current_quantity:
                     break
-                print(f"La cantidad debe ser al menos {current_quantity}.")
+                else:
+                    print(f"La cantidad debe ser al menos {current_quantity}.")
             except ValueError:
                 print("Por favor, ingresa un número válido.")
 
