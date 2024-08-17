@@ -1,4 +1,5 @@
 import random
+import time
 from src.models.player import Player
 
 
@@ -7,6 +8,7 @@ class AIPlayer(Player):
         super().__init__(name)
 
     def make_bet(self, current_bet):
+        self._simulate_thinking()
         # Implementación simple de IA para hacer apuestas
         if current_bet is None:
             return (random.randint(1, 3), random.randint(1, 6))
@@ -17,6 +19,11 @@ class AIPlayer(Player):
                 return None  # Dudar
 
     def decide_action(self, current_bet):
+        self._simulate_thinking()
         # Implementación simple de IA para decidir acciones
         actions = ['subir', 'dudar', 'calzar']
         return random.choice(actions)
+
+    def _simulate_thinking(self):
+        thinking_time = random.uniform(3, 7)
+        time.sleep(thinking_time)

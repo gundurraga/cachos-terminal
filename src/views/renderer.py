@@ -1,65 +1,96 @@
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 from src.views.dice_renderer import DiceRenderer
 
 
 class Renderer:
     def __init__(self):
         self.dice_renderer = DiceRenderer()
+        self.console = Console()
 
     def display_welcome_message(self):
-        print("¡Bienvenido al juego de Cachos!")
+        welcome_message = Panel(
+            "¡Bienvenido al juego de Cachos!", title="Cachos", expand=False)
+        self.console.print(welcome_message)
 
     def display_players(self, players):
-        print("\nJugadores:")
+        table = Table(title="Jugadores")
+        table.add_column("Nombre", style="cyan")
+        table.add_column("Tipo", style="magenta")
+        table.add_column("Dados", justify="right", style="green")
+
         for player in players:
             player_type = "Humano" if player.__class__.__name__ == "HumanPlayer" else "IA"
-            print(f"{player.name} ({player_type}) - Dados: {len(player.dice)}")
+            table.add_row(player.name, player_type, str(len(player.dice)))
+
+        self.console.print(table)
 
     def display_starting_player(self, player):
-        print(f"\n{player.name} comienza el juego.")
+        self.console.print(
+            f"\n[bold green]{player.name}[/bold green] comienza el juego.")
 
     def display_round_start(self):
-        print("\n--- Nueva Ronda ---")
+        self.console.rule("[bold blue]Nueva Ronda[/bold blue]")
 
     def display_current_player(self, player):
-        print(f"\nTurno de {player.name}")
+        self.console.print(f"\nTurno de [bold]{player.name}[/bold]")
 
     def display_dice(self, dice_values):
         dice_str = " ".join(self.dice_renderer.render(value)
                             for value in dice_values)
-        print(f"Tus dados: {dice_str}")
+        self.console.print(f"Tus dados: {dice_str}")
 
     def display_bet(self, player, bet):
         quantity, value = bet
-        print(f"{player.name} apuesta: {quantity} dados con valor {value}")
+        self.console.print(
+            f"[bold]{player.name}[/bold] apuesta: [cyan]{quantity}[/cyan] dados con valor [cyan]{value}[/cyan]")
 
     def display_doubt_result(self, loser, actual_count, bet):
         quantity, value = bet
-        print(f"¡Duda! Había {actual_count} dados con valor {value}")
-        print(f"{loser.name} pierde un dado.")
+        self.console.print(
+            f"[bold red]¡Duda![/bold red] Había [cyan]{actual_count}[/cyan] dados con valor [cyan]{value}[/cyan]")
+        self.console.print(f"[bold]{loser.name}[/bold] pierde un dado.")
 
     def display_calzo_success(self, player):
-        print(f"¡Calzo exitoso! {player.name} gana un dado.")
+        self.console.print(
+            f"[bold green]¡Calzo exitoso![/bold green] {player.name} gana un dado.")
 
     def display_calzo_failure(self, player):
-        print(f"¡Calzo fallido! {player.name} pierde un dado.")
+        self.console.print(
+            f"[bold red]¡Calzo fallido![/bold red] {player.name} pierde un dado.")
 
     def display_winner(self, player):
-        print(f"\n¡{player.name} ha ganado el juego!")
+        winner_message = Panel(
+            f"{player.name} ha ganado el juego!", title="Ganador", expand=False)
+        self.console.print(winner_message)
 
     def display_action(self, player, action):
-        print(f"{player.name} elige: {action}")
+        self.console.print(
+            f"{player.name} elige: [bold blue]{action}[/bold blue]")
 
     def display_all_dice(self, players):
-        print("\nDados de todos los jugadores:")
+        table = Table(title="Dados de todos los jugadores")
+        table.add_column("Jugador", style="cyan")
+        table.add_column("Dados", style="magenta")
+
         for player in players:
             dice_str = " ".join(self.dice_renderer.render(value)
                                 for value in player.get_dice_values())
-            print(f"{player.name}: {dice_str}")
+            table.add_row(player.name, dice_str)
+
+        self.console.print(table)
 
     def display_round_end(self, players):
-        print("\nFin de la ronda. Estado de los jugadores:")
+        table = Table(title="Fin de la ronda")
+        table.add_column("Jugador", style="cyan")
+        table.add_column("Dados", justify="right", style="green")
+
         for player in players:
-            print(f"{player.name} - Dados: {len(player.dice)}")
+            table.add_row(player.name, str(len(player.dice)))
+
+        self.console.print(table)
 
     def display_error(self, message):
-        print(f"\nError: {message}")
+        self.console.print(f"[bold red]Error:[/bold red] {message}")
