@@ -3,19 +3,22 @@ from src.models.player import Player
 from src.models.human_player import HumanPlayer
 from src.models.ai_player import AIPlayer
 from src.utils.name_generator import NameGenerator
+from src.views.input_handler import InputHandler
 
 
 class PlayerManager:
     def __init__(self, num_ai_players: int):
         self.name_generator = NameGenerator()
+        self.input_handler = InputHandler()
         self.players: List[Player] = self.initialize_players(num_ai_players)
         self.current_player_index: int = 0
 
     def initialize_players(self, num_ai_players: int) -> List[Player]:
-        players = [HumanPlayer("Jugador Humano")]
-        for i in range(num_ai_players):
+        human_name = self.input_handler.get_player_name()
+        players = [HumanPlayer(human_name)]
+        for _ in range(num_ai_players):
             ai_name = self.name_generator.get_random_name()
-            players.append(AIPlayer(f"{ai_name} (AI {i+1})"))
+            players.append(AIPlayer(f"{ai_name} (AI)"))
         return players
 
     def get_current_player(self) -> Player:
@@ -51,3 +54,9 @@ class PlayerManager:
     def roll_all_dice(self):
         for player in self.players:
             player.roll_dice()
+
+    def reset_game(self):
+        self.name_generator.reset()
+        self.current_player_index = 0
+        for player in self.players:
+            player.reset()

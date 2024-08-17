@@ -2,6 +2,13 @@ from typing import Tuple, Optional
 
 
 class InputHandler:
+    def get_player_name(self) -> str:
+        while True:
+            name = input("Por favor, ingresa tu nombre: ").strip()
+            if name:
+                return name
+            print("El nombre no puede estar vacío. Por favor, intenta de nuevo.")
+
     def get_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
         if current_bet:
             current_quantity, current_value = current_bet
