@@ -26,7 +26,12 @@ class RoundManager:
             if isinstance(current_player, HumanPlayer):
                 self.renderer.display_dice(current_player.get_dice_values())
 
-            action = self.get_player_action(current_player)
+            if self.is_first_turn:
+                self.renderer.display_first_turn_message()
+                action = 'apostar'
+            else:
+                action = self.get_player_action(current_player)
+
             self.renderer.display_action(current_player, action)
 
             if action == 'dudar':
@@ -43,10 +48,14 @@ class RoundManager:
         self.renderer.display_round_end(self.player_manager.players)
 
     def get_player_action(self, player: Player) -> str:
-        if self.is_first_turn:
-            self.renderer.display_first_turn_message()
-            return 'subir'
-        return player.decide_action(self.bet_manager.get_bet())
+        current_bet = self.bet_manager.get_bet()
+        action = player.decide_action(current_bet, self.is_first_turn)
+
+        if current_bet is None and action != 'apostar':
+            self.renderer.display_error("No hay apuesta previa. Debes subir.")
+            return 'apostar'
+
+        return action
 
     def handle_doubt(self) -> bool:
         if self.bet_manager.get_bet() is None:

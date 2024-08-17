@@ -10,9 +10,7 @@ class AIPlayer(Player):
 
     def make_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
         self._simulate_thinking()
-        if is_first_turn:
-            return (random.randint(1, 3), random.randint(1, 6))
-        elif current_bet is None:
+        if is_first_turn or current_bet is None:
             return (random.randint(1, 3), random.randint(1, 6))
         else:
             if random.random() < 0.7:  # 70% de probabilidad de subir la apuesta
@@ -20,9 +18,13 @@ class AIPlayer(Player):
             else:
                 return None  # Dudar
 
-    def decide_action(self, current_bet):
+    def decide_action(self, current_bet, is_first_turn: bool):
         self._simulate_thinking()
-        actions = ['subir', 'dudar', 'calzar']
+        if is_first_turn:
+            return 'apostar'
+        if current_bet is None:
+            return 'apostar'  # Si no hay apuesta previa, siempre subir
+        actions = ['apostar', 'dudar', 'calzar']
         return random.choice(actions)
 
     def _simulate_thinking(self):

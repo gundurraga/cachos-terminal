@@ -11,5 +11,7 @@ class HumanPlayer(Player):
     def make_bet(self, current_bet: Optional[Tuple[int, int]], is_first_turn: bool) -> Optional[Tuple[int, int]]:
         return self.input_handler.get_bet(current_bet, is_first_turn)
 
-    def decide_action(self, current_bet):
+    def decide_action(self, current_bet, is_first_turn: bool):
+        if is_first_turn or current_bet is None:
+            return 'apostar'
         return self.input_handler.get_action(current_bet)

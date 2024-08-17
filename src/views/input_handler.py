@@ -6,18 +6,16 @@ class InputHandler:
         if current_bet:
             current_quantity, current_value = current_bet
         else:
-            current_quantity, current_value = (1 if is_first_turn else 0), 0
+            current_quantity, current_value = 1, 1
 
         while True:
             try:
-                quantity = int(input(
-                    f"Ingresa la cantidad de dados (mínimo {'1' if is_first_turn else str(current_quantity)}): "))
-                if is_first_turn and quantity < 1:
-                    print("En el primer turno, la apuesta mínima es 1 dado.")
-                elif quantity >= current_quantity:
-                    break
-                else:
+                quantity = int(
+                    input(f"Ingresa la cantidad de dados (mínimo {current_quantity}): "))
+                if quantity < current_quantity:
                     print(f"La cantidad debe ser al menos {current_quantity}.")
+                else:
+                    break
             except ValueError:
                 print("Por favor, ingresa un número válido.")
 
@@ -33,7 +31,7 @@ class InputHandler:
         return (quantity, value)
 
     def get_action(self, current_bet):
-        actions = ['subir', 'dudar', 'calzar']
+        actions = ['apostar', 'dudar', 'calzar']
         while True:
             action = input(
                 "¿Qué acción quieres realizar? (subir/dudar/calzar): ").lower()
