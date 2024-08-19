@@ -7,9 +7,10 @@ from src.views.input_handler import InputHandler
 
 
 class PlayerManager:
-    def __init__(self, num_ai_players: int):
+    def __init__(self, num_ai_players: int, game):
         self.name_generator = NameGenerator()
         self.input_handler = InputHandler()
+        self.game = game
         self.players: List[Player] = self.initialize_players(num_ai_players)
         self.current_player_index: int = 0
 
@@ -18,7 +19,7 @@ class PlayerManager:
         players = [HumanPlayer(human_name)]
         for _ in range(num_ai_players):
             ai_name = self.name_generator.get_random_name()
-            players.append(AIPlayer(f"{ai_name} (AI)"))
+            players.append(AIPlayer(f"{ai_name} (AI)", self.game))
         return players
 
     def get_current_player(self) -> Player:

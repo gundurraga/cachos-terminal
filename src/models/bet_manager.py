@@ -24,14 +24,12 @@ class BetManager:
         current_quantity, current_value = self.current_bet
         new_quantity, new_value = new_bet
 
-        if new_quantity > current_quantity:
-            return True
-        elif new_quantity == current_quantity and new_value > current_value:
-            return True
-        elif new_value == 1 and new_quantity >= (current_quantity + 1) // 2:
-            return True  # Regla especial para ases
+        if new_value == 1:  # Apuesta de ases
+            return new_quantity >= (current_quantity + 1) // 2
+        elif current_value == 1:  # Subiendo desde ases
+            return new_quantity >= current_quantity * 2 + 1
         else:
-            return False
+            return new_quantity > current_quantity or (new_quantity == current_quantity and new_value > current_value)
 
     def calculate_equivalent_bet(self, current_bet: Tuple[int, int], new_pinta: int) -> int:
         current_quantity, current_value = current_bet
@@ -41,3 +39,10 @@ class BetManager:
             return current_quantity * 2 + 1
         else:
             return current_quantity
+
+    @staticmethod
+    def count_dice(dice_values: list[int], bet_value: int) -> int:
+        if bet_value == 1:
+            return sum(1 for value in dice_values if value == 1)
+        else:
+            return sum(1 for value in dice_values if value == bet_value or value == 1)

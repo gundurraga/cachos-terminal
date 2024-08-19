@@ -7,9 +7,12 @@ from src.views.renderer import Renderer
 class Game:
     def __init__(self, num_ai_players: int, renderer: Renderer):
         self.renderer = renderer
-        self.player_manager = PlayerManager(num_ai_players)
+        self.player_manager = PlayerManager(num_ai_players, self)
         self.bet_manager = BetManager()
         self.round_manager = RoundManager(self.player_manager, self.renderer)
+
+    def get_players(self):
+        return self.player_manager.players
 
     def start_game(self):
         self.renderer.display_welcome_message()

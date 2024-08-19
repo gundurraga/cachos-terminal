@@ -104,11 +104,9 @@ class RoundManager:
             return False
 
         bet_quantity, bet_value = self.bet_manager.get_bet()
-        total_count = sum(
-            dice_value == bet_value
-            for player in self.player_manager.players
-            for dice_value in player.get_dice_values()
-        )
+        all_dice = [
+            dice for player in self.player_manager.players for dice in player.get_dice_values()]
+        total_count = self.bet_manager.count_dice(all_dice, bet_value)
 
         self.renderer.display_all_dice(self.player_manager.players)
 
