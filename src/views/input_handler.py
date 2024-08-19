@@ -13,14 +13,16 @@ class InputHandler:
         if current_bet:
             current_quantity, current_value = current_bet
         else:
-            current_quantity, current_value = 1, 1
+            current_quantity, current_value = 0, 1
+
+        min_quantity = max(1, current_quantity)
 
         while True:
             try:
                 quantity = int(
-                    input(f"Ingresa la cantidad de dados (mínimo {current_quantity}): "))
-                if quantity < current_quantity:
-                    print(f"La cantidad debe ser al menos {current_quantity}.")
+                    input(f"Ingresa la cantidad de dados (mínimo {min_quantity}): "))
+                if quantity < min_quantity:
+                    print(f"La cantidad debe ser al menos {min_quantity}.")
                 else:
                     break
             except ValueError:
@@ -30,18 +32,26 @@ class InputHandler:
             try:
                 value = int(input("Ingresa el valor de los dados (1-6): "))
                 if 1 <= value <= 6:
-                    break
-                print("El valor debe estar entre 1 y 6.")
+                    if quantity == current_quantity and value <= current_value:
+                        print(
+                            f"Si mantienes la misma cantidad, el valor debe ser mayor que {current_value}.")
+                    elif quantity < current_quantity and value != 1:
+                        print(
+                            "Solo puedes reducir la cantidad si cambias a ases (1).")
+                    else:
+                        break
+                else:
+                    print("El valor debe estar entre 1 y 6.")
             except ValueError:
                 print("Por favor, ingresa un número válido.")
 
         return (quantity, value)
 
     def get_action(self, current_bet):
-        actions = ['apostar', 'dudar', 'calzar']
+        valid_actions = ['apostar', 'dudar', 'calzar']
         while True:
             action = input(
-                "¿Qué acción quieres realizar? (subir/dudar/calzar): ").lower()
-            if action in actions:
+                "¿Qué acción quieres realizar? (apostar/dudar/calzar): ").lower().strip()
+            if action in valid_actions:
                 return action
-            print("Por favor, elige una acción válida.")
+            print("Por favor, elige una acción válida (apostar, dudar o calzar).")

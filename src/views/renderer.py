@@ -1,30 +1,43 @@
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
 from src.views.dice_renderer import DiceRenderer
+from src.views.table_renderer import TableRenderer
+from rich.table import Table
 
 
 class Renderer:
     def __init__(self):
         self.dice_renderer = DiceRenderer()
         self.console = Console()
+        self.pinta_names = {
+            1: "as",
+            2: "tonto",
+            3: "tren",
+            4: "cuadra",
+            5: "quina",
+            6: "sexta"
+        }
+        self.pinta_plurals = {
+            1: "ases",
+            2: "tontos",
+            3: "trenes",
+            4: "cuadras",
+            5: "quinas",
+            6: "sextas"
+        }
 
     def display_welcome_message(self):
         welcome_message = Panel(
             "¡Bienvenido al juego de Cachos!", title="Cachos", expand=False)
         self.console.print(welcome_message)
 
-    def display_players(self, players):
-        table = Table(title="Jugadores")
-        table.add_column("Nombre", style="cyan")
-        table.add_column("Dados", justify="right", style="green")
+    def display_players(self, players, current_player_index):
+        TableRenderer.render_to_console(players, current_player_index)
 
-        for player in players:
-            player_type = "Humano" if player.__class__.__name__ == "HumanPlayer" else "IA"
-            table.add_row(player.name, str(len(player.dice)))
-
-        self.console.print(table)
+    def display_current_player_dice(self, player):
+        dice_str = " ".join(self.dice_renderer.render(value)
+                            for value in player.get_dice_values())
+        self.console.print(f"Tus dados: {dice_str}")
 
     def display_starting_player(self, player):
         self.console.print(
@@ -47,8 +60,11 @@ class Renderer:
 
     def display_bet(self, player, bet):
         quantity, value = bet
+        pinta_name = self.pinta_names.get(value, str(value))
+        pinta_plural = self.pinta_plurals.get(value, f"{pinta_name}s")
+        pinta_display = pinta_plural if quantity > 1 else pinta_name
         self.console.print(
-            f"[bold]{player.name}[/bold] apuesta: [cyan]{quantity}[/cyan] dados con valor [cyan]{value}[/cyan]")
+            f"[bold]{player.name}[/bold] apuesta: [cyan]{quantity} {pinta_display}[/cyan]")
 
     def display_doubt_result(self, loser, actual_count, bet):
         quantity, value = bet
@@ -97,3 +113,11 @@ class Renderer:
 
     def display_error(self, message):
         self.console.print(f"[bold red]Error:[/bold red] {message}")
+
+    def display_invalid_ai_bet(self, player):
+        self.console.print(
+            f"[bold yellow]{player.name} intentó hacer una apuesta inválida. Intentando de nuevo...[/bold yellow]")
+
+    def display_ai_doubt(self, player):
+        self.console.print(
+            f"[bold yellow]{player.name} no pudo hacer una apuesta válida y decide dudar.[/bold yellow]")

@@ -1,4 +1,3 @@
-# bet_manager.py
 from typing import Tuple, Optional
 
 
@@ -29,6 +28,8 @@ class BetManager:
             return True
         elif new_quantity == current_quantity and new_value > current_value:
             return True
+        elif new_value == 1 and new_quantity >= (current_quantity + 1) // 2:
+            return True  # Regla especial para ases
         else:
             return False
 

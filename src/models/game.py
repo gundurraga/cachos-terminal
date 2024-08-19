@@ -13,21 +13,17 @@ class Game:
 
     def start_game(self):
         self.renderer.display_welcome_message()
-        self.renderer.display_players(self.player_manager.players)
 
         starting_player = self.player_manager.determine_starting_player()
+        starting_player_index = self.player_manager.players.index(
+            starting_player)
+
         self.renderer.display_starting_player(starting_player)
+        self.renderer.display_players(
+            self.player_manager.players, starting_player_index)
 
         while not self.player_manager.check_game_over():
             self.round_manager.play_round()
 
         winner = self.player_manager.get_winner()
         self.renderer.display_winner(winner)
-
-
-if __name__ == "__main__":
-    num_ai_players = int(
-        input("¿Contra cuántos jugadores AI quieres jugar? (1-7): "))
-    renderer = Renderer()
-    game = Game(num_ai_players, renderer)
-    game.start_game()
