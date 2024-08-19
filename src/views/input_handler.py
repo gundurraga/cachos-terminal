@@ -1,4 +1,5 @@
 from typing import Tuple, Optional
+from src.models.bet_manager import BetManager
 
 
 class InputHandler:
@@ -15,37 +16,31 @@ class InputHandler:
         else:
             current_quantity, current_value = 0, 1
 
-        min_quantity = max(1, current_quantity)
+        bet_manager = BetManager()
 
         while True:
             try:
-                quantity = int(
-                    input(f"Ingresa la cantidad de dados (mínimo {min_quantity}): "))
-                if quantity < min_quantity:
-                    print(f"La cantidad debe ser al menos {min_quantity}.")
-                else:
-                    break
-            except ValueError:
-                print("Por favor, ingresa un número válido.")
-
-        while True:
-            try:
+                quantity = int(input(f"Ingresa la cantidad de dados: "))
                 value = int(input("Ingresa el valor de los dados (1-6): "))
-                if 1 <= value <= 6:
-                    if quantity == current_quantity and value <= current_value:
+
+                new_bet = (quantity, value)
+
+                if bet_manager.is_valid_bet(new_bet, is_first_turn):
+                    return new_bet
+                else:
+                    if value == 1:
                         print(
-                            f"Si mantienes la misma cantidad, el valor debe ser mayor que {current_value}.")
-                    elif quantity < current_quantity and value != 1:
+                            f"Para apostar ases, la cantidad mínima es {bet_manager.calculate_equivalent_bet(current_bet, 1)}.")
+                    elif current_value == 1:
+                        print(
+                            f"Al subir desde ases, la cantidad mínima es {bet_manager.calculate_equivalent_bet(current_bet, value)}.")
+                    elif quantity < current_quantity:
                         print(
                             "Solo puedes reducir la cantidad si cambias a ases (1).")
                     else:
-                        break
-                else:
-                    print("El valor debe estar entre 1 y 6.")
+                        print("Apuesta inválida. Intenta de nuevo.")
             except ValueError:
-                print("Por favor, ingresa un número válido.")
-
-        return (quantity, value)
+                print("Por favor, ingresa números válidos.")
 
     def get_action(self, current_bet):
         valid_actions = ['apostar', 'dudar', 'calzar']

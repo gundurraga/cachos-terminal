@@ -3,6 +3,7 @@ from rich.panel import Panel
 from src.views.dice_renderer import DiceRenderer
 from src.views.table_renderer import TableRenderer
 from rich.table import Table
+import time
 
 
 class Renderer:
@@ -101,15 +102,52 @@ class Renderer:
 
         self.console.print(table)
 
+    def display_round_result(self, action, player, bet, actual_count, success):
+        if action == 'doubt':
+            doubter, doubted = player
+            quantity, value = bet
+            pinta_name = self.pinta_plurals.get(
+                value, f"{self.pinta_names.get(value, str(value))}s")
+            self.console.print(
+                f"\n[bold]{doubter.name}[/bold] le dudó los [cyan]{quantity} {pinta_name}[/cyan] a [bold]{doubted.name}[/bold].")
+            self.console.print(
+                f"Habían [cyan]{actual_count} {pinta_name}[/cyan].")
+            loser = doubted if success else doubter
+            self.console.print(
+                f"[bold]{loser.name}[/bold] pierde un dado y comienza la próxima ronda.")
+        elif action == 'calzo':
+            quantity, value = bet
+            pinta_name = self.pinta_plurals.get(
+                value, f"{self.pinta_names.get(value, str(value))}s")
+            self.console.print(
+                f"\n[bold]{player.name}[/bold] calzó los [cyan]{quantity} {pinta_name}[/cyan].")
+            self.console.print(
+                f"Habían [cyan]{actual_count} {pinta_name}[/cyan].")
+            if success:
+                self.console.print(
+                    f"[bold green]¡Calzo exitoso![/bold green] {player.name} gana un dado y comienza la próxima ronda.")
+            else:
+                self.console.print(
+                    f"[bold red]¡Calzo fallido![/bold red] {player.name} pierde un dado y comienza la próxima ronda.")
+
+        # Pausa de 2 segundos para que los jugadores asimilen la información
+        time.sleep(2)
+
     def display_round_end(self, players):
-        table = Table(title="Fin de la ronda")
+        table = Table(title="Resultado de la ronda")
         table.add_column("Jugador", style="cyan")
-        table.add_column("Dados", justify="right", style="green")
+        table.add_column("Dados", justify="center", style="magenta")
+        table.add_column("Restantes", justify="right", style="green")
 
         for player in players:
-            table.add_row(player.name, str(len(player.dice)))
+            dice_str = " ".join(self.dice_renderer.render(value)
+                                for value in player.get_dice_values())
+            table.add_row(player.name, dice_str, str(len(player.dice)))
 
-        self.console.print(table)
+        self.console.print(Panel(table, expand=False))
+
+        # Pausa de 3 segundos antes de comenzar la siguiente ronda
+        time.sleep(3)
 
     def display_error(self, message):
         self.console.print(f"[bold red]Error:[/bold red] {message}")
