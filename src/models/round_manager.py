@@ -103,16 +103,18 @@ class RoundManager:
                 "No se puede dudar sin una apuesta previa.")
             return False
 
-        bet = self.bet_manager.get_bet()
+        bet_quantity, bet_value = self.bet_manager.get_bet()
         all_dice = [
             dice for player in self.player_manager.players for dice in player.get_dice_values()]
-        total_count = self.bet_manager.count_dice(all_dice, bet[1])
+        total_count = self.bet_manager.count_dice(all_dice, bet_value)
 
-        doubter = self.player_manager.get_current_player()
-        doubted = self.player_manager.get_previous_player()
+        self.renderer.display_all_dice(self.player_manager.players)
 
-        success = total_count < bet[0]
-        loser = doubted if success else doubter
+        if total_count >= bet_quantity:
+            loser = self.player_manager.get_current_player()
+        else:
+            loser = self.player_manager.get_previous_player()
+
         loser.remove_die()
 
         self.renderer.display_round_result(
