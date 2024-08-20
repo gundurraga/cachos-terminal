@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Tuple
 from rich.console import Console
 from rich.table import Table
 from src.views.table_renderer import TableRenderer
@@ -15,15 +15,18 @@ class PlayerRenderer:
         self.dice_renderer: DiceRenderer = DiceRenderer()
         logger.info("PlayerRenderer inicializado")
 
-    def display_players(self, players: List[Player], current_player_index: int) -> None:
+    def display_players(self, players: List[Player], current_player_index: int, last_player: Optional[Player] = None, last_bet: Optional[Tuple[int, int]] = None) -> None:
         """
         Muestra la información de todos los jugadores en la mesa.
 
         Args:
             players (List[Player]): Lista de jugadores en el juego.
             current_player_index (int): Índice del jugador actual.
+            last_player (Optional[Player]): Último jugador que realizó una acción.
+            last_bet (Optional[Tuple[int, int]]): Última apuesta realizada.
         """
-        TableRenderer.render_to_console(players, current_player_index)
+        TableRenderer.render_to_console(
+            players, current_player_index, last_player, last_bet)
         logger.info(
             f"Mostrando {len(players)} jugadores. Jugador actual: {current_player_index}")
 

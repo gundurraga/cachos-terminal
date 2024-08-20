@@ -16,6 +16,8 @@ class RoundManager:
         self.renderer: Renderer = renderer
         self.bet_manager: BetManager = BetManager()
         self.is_first_turn: bool = True
+        self.last_player: Optional[Player] = None
+        self.last_bet: Optional[Tuple[int, int]] = None
 
     def play_round(self) -> None:
         try:
@@ -23,13 +25,15 @@ class RoundManager:
             self.renderer.display_round_start()
             self.player_manager.roll_all_dice()
             self.bet_manager.reset_bet()
+            self.last_player = None
+            self.last_bet = None
 
             round_over: bool = False
             while not round_over:
                 current_player: Player = self.player_manager.get_current_player()
                 current_player_index: int = self.player_manager.current_player_index
                 self.renderer.display_players(
-                    self.player_manager.players, current_player_index)
+                    self.player_manager.players, current_player_index, self.last_player, self.last_bet)
                 self.renderer.display_current_player(current_player)
 
                 if isinstance(current_player, HumanPlayer):
@@ -46,6 +50,8 @@ class RoundManager:
                     round_over = self.handle_raise(current_player)
 
                 if not round_over:
+                    self.last_player = current_player
+                    self.last_bet = self.bet_manager.get_bet()
                     self.player_manager.next_player()
                     self.is_first_turn = False
 

@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple
 from rich.table import Table
 from rich.text import Text
 from rich.panel import Panel
@@ -16,17 +16,7 @@ class TableRenderer:
                          "blue", "magenta", "cyan", "white"]
 
     @staticmethod
-    def render_table(players: List[Player], current_player_index: int) -> Table:
-        """
-        Renderiza la mesa de juego con la información de los jugadores.
-
-        Args:
-            players (List[Player]): Lista de jugadores en el juego.
-            current_player_index (int): Índice del jugador actual.
-
-        Returns:
-            Table: La mesa de juego renderizada como una tabla Rich.
-        """
+    def render_table(players: List[Player], current_player_index: int, last_player: Optional[Player] = None, last_bet: Optional[Tuple[int, int]] = None) -> Table:
         table = Table(show_header=False, show_edge=False,
                       pad_edge=False, box=None)
 
@@ -35,37 +25,26 @@ class TableRenderer:
 
         player_colors = TableRenderer._assign_unique_colors(players)
 
-        # Distribuir jugadores
         top_row = players[:3]
         middle_row = players[3:5]
         bottom_row = players[5:]
 
-        # Añadir filas a la tabla
         TableRenderer._add_player_row(
-            table, top_row, current_player_index, player_colors)
-        table.add_row("", "", "")  # Empty row for spacing
+            table, top_row, current_player_index, player_colors, last_player, last_bet)
+        table.add_row("", "", "")
         if middle_row:
             TableRenderer._add_side_players(
-                table, middle_row, current_player_index, player_colors)
-        table.add_row("", "", "")  # Empty row for spacing
+                table, middle_row, current_player_index, player_colors, last_player, last_bet)
+        table.add_row("", "", "")
         if bottom_row:
             TableRenderer._add_player_row(
-                table, bottom_row, current_player_index, player_colors, is_bottom=True)
+                table, bottom_row, current_player_index, player_colors, last_player, last_bet, is_bottom=True)
 
         logger.debug(f"Mesa renderizada con {len(players)} jugadores")
         return table
 
     @staticmethod
     def _assign_unique_colors(players: List[Player]) -> Dict[Player, str]:
-        """
-        Asigna colores únicos a cada jugador.
-
-        Args:
-            players (List[Player]): Lista de jugadores en el juego.
-
-        Returns:
-            Dict[Player, str]: Diccionario que mapea cada jugador a un color único.
-        """
         colors = TableRenderer.COLORS * \
             (len(players) // len(TableRenderer.COLORS) + 1)
         random.shuffle(colors)
@@ -73,25 +52,17 @@ class TableRenderer:
 
     @staticmethod
     def _add_player_row(table: Table, players: List[Player], current_player_index: int,
-                        player_colors: Dict[Player, str], is_bottom: bool = False) -> None:
-        """
-        Añade una fila de jugadores a la tabla.
-
-        Args:
-            table (Table): La tabla Rich a la que se añadirá la fila.
-            players (List[Player]): Lista de jugadores para añadir a la fila.
-            current_player_index (int): Índice del jugador actual.
-            player_colors (Dict[Player, str]): Diccionario que mapea jugadores a colores.
-            is_bottom (bool, optional): Indica si es la fila inferior. Por defecto False.
-        """
+                        player_colors: Dict[Player, str], last_player: Optional[Player],
+                        last_bet: Optional[Tuple[int, int]], is_bottom: bool = False) -> None:
         row = []
         for i in range(3):
             if i < len(players):
                 player = players[i]
                 is_current = players.index(player) == current_player_index
                 color = player_colors[player]
+                is_last = player == last_player
                 player_panel = TableRenderer._get_player_panel(
-                    player, is_current, color)
+                    player, is_current, color, is_last, last_bet)
                 row.append(player_panel)
             else:
                 row.append("")
@@ -99,56 +70,52 @@ class TableRenderer:
 
     @staticmethod
     def _add_side_players(table: Table, players: List[Player], current_player_index: int,
-                          player_colors: Dict[Player, str]) -> None:
-        """
-        Añade jugadores a los lados de la tabla.
-
-        Args:
-            table (Table): La tabla Rich a la que se añadirán los jugadores.
-            players (List[Player]): Lista de jugadores para añadir a los lados.
-            current_player_index (int): Índice del jugador actual.
-            player_colors (Dict[Player, str]): Diccionario que mapea jugadores a colores.
-        """
+                          player_colors: Dict[Player, str], last_player: Optional[Player],
+                          last_bet: Optional[Tuple[int, int]]) -> None:
         left_player = players[0] if len(players) > 0 else None
         right_player = players[1] if len(players) > 1 else None
 
-        left_panel = TableRenderer._get_player_panel(left_player, players.index(left_player) == current_player_index,
-                                                     player_colors[left_player]) if left_player else ""
-        right_panel = TableRenderer._get_player_panel(right_player, players.index(right_player) == current_player_index,
-                                                      player_colors[right_player]) if right_player else ""
+        left_panel = TableRenderer._get_player_panel(
+            left_player,
+            left_player and players.index(left_player) == current_player_index,
+            player_colors[left_player] if left_player else "",
+            left_player == last_player,
+            last_bet
+        ) if left_player else ""
+
+        right_panel = TableRenderer._get_player_panel(
+            right_player,
+            right_player and players.index(
+                right_player) == current_player_index,
+            player_colors[right_player] if right_player else "",
+            right_player == last_player,
+            last_bet
+        ) if right_player else ""
 
         table.add_row(left_panel, "", right_panel)
 
     @staticmethod
-    def _get_player_panel(player: Player, is_current: bool, color: str) -> Panel:
-        """
-        Crea un panel Rich para un jugador.
-
-        Args:
-            player (Player): El jugador para el que se creará el panel.
-            is_current (bool): Indica si es el jugador actual.
-            color (str): Color asignado al jugador.
-
-        Returns:
-            Panel: Un panel Rich con la información del jugador.
-        """
+    def _get_player_panel(player: Player, is_current: bool, color: str, is_last: bool, last_bet: Optional[Tuple[int, int]]) -> Panel:
         player_text = Text()
         if is_current:
             player_text.append("-> ", style="bold")
         player_text.append(f"{player.name}\n", style="bold")
         player_text.append(f"Dados: {len(player.dice)}")
+        if is_last and last_bet:
+            player_text.append(
+                f"\n{last_bet[0]} {TableRenderer._get_pinta_name(last_bet[1])}", style="bold red")
         return Panel(player_text, border_style=color, expand=False)
 
     @staticmethod
-    def render_to_console(players: List[Player], current_player_index: int) -> None:
-        """
-        Renderiza la mesa de juego en la consola.
+    def _get_pinta_name(value: int) -> str:
+        pinta_names = {1: "as", 2: "tontos", 3: "trenes",
+                       4: "cuadras", 5: "quinas", 6: "sextas"}
+        return pinta_names.get(value, str(value))
 
-        Args:
-            players (List[Player]): Lista de jugadores en el juego.
-            current_player_index (int): Índice del jugador actual.
-        """
-        table = TableRenderer.render_table(players, current_player_index)
+    @staticmethod
+    def render_to_console(players: List[Player], current_player_index: int, last_player: Optional[Player] = None, last_bet: Optional[Tuple[int, int]] = None) -> None:
+        table = TableRenderer.render_table(
+            players, current_player_index, last_player, last_bet)
         console = Console()
         console.print(Panel(table, title="Mesa de Juego", expand=False))
         logger.info("Mesa de juego renderizada en la consola")

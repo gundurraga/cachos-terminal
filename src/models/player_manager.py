@@ -31,7 +31,7 @@ class PlayerManager:
 
             for _ in range(num_ai_players):
                 ai_name: str = self.name_generator.get_random_name()
-                players.append(AIPlayer(f"{ai_name} (AI)", self.game))
+                players.append(AIPlayer(f"{ai_name}", self.game))
 
             logger.info(
                 f"Jugadores inicializados: {[player.name for player in players]}")

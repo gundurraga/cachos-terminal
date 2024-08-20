@@ -21,10 +21,11 @@ class Renderer:
         logger.debug("Mostrando mensaje de bienvenida")
         self.game_renderer.display_welcome_message()
 
-    def display_players(self, players: List[Player], current_player_index: int) -> None:
+    def display_players(self, players: List[Player], current_player_index: int, last_player: Optional[Player] = None, last_bet: Optional[Tuple[int, int]] = None) -> None:
         logger.debug(
             f"Mostrando {len(players)} jugadores. Jugador actual: {current_player_index}")
-        self.player_renderer.display_players(players, current_player_index)
+        self.player_renderer.display_players(
+            players, current_player_index, last_player, last_bet)
 
     def display_current_player_dice(self, player: Player) -> None:
         logger.debug(f"Mostrando dados del jugador actual: {player.name}")
