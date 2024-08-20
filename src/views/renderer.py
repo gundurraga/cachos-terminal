@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 from rich.console import Console
 from src.views.game_renderer import GameRenderer
 from src.views.player_renderer import PlayerRenderer
@@ -47,11 +47,20 @@ class Renderer:
         logger.debug(f"Mostrando apuesta de {player.name}: {bet}")
         self.bet_renderer.display_bet(player, bet)
 
-    def display_round_result(self, action: str, player: Player, bet: Tuple[int, int], actual_count: int, success: bool) -> None:
+    def display_round_result(self, action: str, players: Union[Player, Tuple[Player, Player]], bet: Tuple[int, int], actual_count: int, success: bool) -> None:
         logger.info(
-            f"Resultado de la ronda: {action} por {player.name}. Éxito: {success}")
+            f"Resultado de la ronda: {action} por {self._get_player_names(players)}. Éxito: {success}")
         self.bet_renderer.display_round_result(
-            action, player, bet, actual_count, success)
+            action, players, bet, actual_count, success)
+
+    @staticmethod
+    def _get_player_names(players: Union[Player, Tuple[Player, Player]]) -> str:
+        if isinstance(players, Player):
+            return players.name
+        elif isinstance(players, tuple) and len(players) == 2:
+            return f"{players[0].name} y {players[1].name}"
+        else:
+            return "Jugadores desconocidos"
 
     def display_winner(self, player: Player) -> None:
         logger.info(f"Ganador del juego: {player.name}")

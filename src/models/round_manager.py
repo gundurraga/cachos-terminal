@@ -155,7 +155,7 @@ class RoundManager:
         logger.info(
             f"Duda: {doubter.name} dudó a {doubted.name}. Resultado: {'éxito' if success else 'fracaso'}")
         self.renderer.display_round_result(
-            'doubt', (doubter, doubted), (bet_quantity, bet_value), total_count, success)
+            'doubt', (doubter, doubted), current_bet, total_count, success)
         return True
 
     def handle_calzo(self, player: Player) -> bool:
