@@ -110,15 +110,20 @@ class RoundManager:
 
         self.renderer.display_all_dice(self.player_manager.players)
 
+        doubter = self.player_manager.get_current_player()
+        doubted = self.player_manager.get_previous_player()
+
         if total_count >= bet_quantity:
-            loser = self.player_manager.get_current_player()
+            loser = doubter
+            success = False
         else:
-            loser = self.player_manager.get_previous_player()
+            loser = doubted
+            success = True
 
         loser.remove_die()
 
         self.renderer.display_round_result(
-            'doubt', (doubter, doubted), bet, total_count, success)
+            'doubt', (doubter, doubted), (bet_quantity, bet_value), total_count, success)
         return True
 
     def handle_calzo(self, player: Player) -> bool:
