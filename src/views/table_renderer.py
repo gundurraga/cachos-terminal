@@ -28,23 +28,38 @@ class TableRenderer:
 
         player_colors = TableRenderer._assign_colors(players)
 
-        top_row = players[:3]
-        middle_row = players[3:5]
-        bottom_row = players[5:]
+        player_positions = TableRenderer._distribute_players(len(players))
 
-        TableRenderer._add_player_row(
-            table, top_row, current_player_index, player_colors, last_player, last_bet, players)
-        table.add_row("", "", "")
-        if middle_row:
-            TableRenderer._add_side_players(
-                table, middle_row, current_player_index, player_colors, last_player, last_bet, players)
-        table.add_row("", "", "")
-        if bottom_row:
-            TableRenderer._add_player_row(
-                table, bottom_row, current_player_index, player_colors, last_player, last_bet, players, is_bottom=True)
+        for row in player_positions:
+            table_row = []
+            for position in row:
+                if position is not None and position < len(players):
+                    player = players[position]
+                    is_current = position == current_player_index
+                    color = player_colors[player]
+                    is_last = player == last_player
+                    player_panel = TableRenderer._get_player_panel(
+                        player, is_current, color, is_last, last_bet)
+                    table_row.append(player_panel)
+                else:
+                    table_row.append("")
+            table.add_row(*table_row)
 
         logger.debug(f"Mesa renderizada con {len(players)} jugadores")
         return table
+
+    @staticmethod
+    def _distribute_players(num_players: int) -> List[List[Optional[int]]]:
+        if num_players <= 3:
+            return [[i for i in range(num_players)] + [None] * (3 - num_players), [None, None, None], [None, None, None]]
+        elif num_players == 4:
+            return [[0, 1, 2], [3, None, None], [None, None, None]]
+        elif num_players == 5:
+            return [[0, 1, 2], [4, None, 3], [None, None, None]]
+        elif num_players == 6:
+            return [[0, 1, 2], [5, None, 3], [4, None, None]]
+        else:
+            return [[0, 1, 2], [num_players - 1, None, 3], [num_players - 2, num_players - 3, 4]]
 
     @staticmethod
     def _assign_colors(players: List[Player]) -> Dict[Player, str]:
@@ -61,51 +76,6 @@ class TableRenderer:
                     available_colors)
 
         return TableRenderer.player_colors
-
-    @staticmethod
-    def _add_player_row(table: Table, row_players: List[Player], current_player_index: int,
-                        player_colors: Dict[Player, str], last_player: Optional[Player],
-                        last_bet: Optional[Tuple[int, int]], all_players: List[Player], is_bottom: bool = False) -> None:
-        row = []
-        for i in range(3):
-            if i < len(row_players):
-                player = row_players[i]
-                is_current = all_players.index(player) == current_player_index
-                color = player_colors[player]
-                is_last = player == last_player
-                player_panel = TableRenderer._get_player_panel(
-                    player, is_current, color, is_last, last_bet)
-                row.append(player_panel)
-            else:
-                row.append("")
-        table.add_row(*row)
-
-    @staticmethod
-    def _add_side_players(table: Table, side_players: List[Player], current_player_index: int,
-                          player_colors: Dict[Player, str], last_player: Optional[Player],
-                          last_bet: Optional[Tuple[int, int]], all_players: List[Player]) -> None:
-        left_player = side_players[0] if side_players else None
-        right_player = side_players[1] if len(side_players) > 1 else None
-
-        left_panel = TableRenderer._get_player_panel(
-            left_player,
-            left_player and all_players.index(
-                left_player) == current_player_index,
-            player_colors[left_player] if left_player else "",
-            left_player == last_player,
-            last_bet
-        ) if left_player else ""
-
-        right_panel = TableRenderer._get_player_panel(
-            right_player,
-            right_player and all_players.index(
-                right_player) == current_player_index,
-            player_colors[right_player] if right_player else "",
-            right_player == last_player,
-            last_bet
-        ) if right_player else ""
-
-        table.add_row(left_panel, "", right_panel)
 
     @staticmethod
     def _get_player_panel(player: Player, is_current: bool, color: str, is_last: bool, last_bet: Optional[Tuple[int, int]]) -> Panel:
