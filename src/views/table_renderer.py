@@ -30,15 +30,15 @@ class TableRenderer:
         bottom_row = players[5:]
 
         TableRenderer._add_player_row(
-            table, top_row, current_player_index, player_colors, last_player, last_bet)
+            table, top_row, current_player_index, player_colors, last_player, last_bet, players)
         table.add_row("", "", "")
         if middle_row:
             TableRenderer._add_side_players(
-                table, middle_row, current_player_index, player_colors, last_player, last_bet)
+                table, middle_row, current_player_index, player_colors, last_player, last_bet, players)
         table.add_row("", "", "")
         if bottom_row:
             TableRenderer._add_player_row(
-                table, bottom_row, current_player_index, player_colors, last_player, last_bet, is_bottom=True)
+                table, bottom_row, current_player_index, player_colors, last_player, last_bet, players, is_bottom=True)
 
         logger.debug(f"Mesa renderizada con {len(players)} jugadores")
         return table
@@ -51,14 +51,14 @@ class TableRenderer:
         return {player: colors[i] for i, player in enumerate(players)}
 
     @staticmethod
-    def _add_player_row(table: Table, players: List[Player], current_player_index: int,
+    def _add_player_row(table: Table, row_players: List[Player], current_player_index: int,
                         player_colors: Dict[Player, str], last_player: Optional[Player],
-                        last_bet: Optional[Tuple[int, int]], is_bottom: bool = False) -> None:
+                        last_bet: Optional[Tuple[int, int]], all_players: List[Player], is_bottom: bool = False) -> None:
         row = []
         for i in range(3):
-            if i < len(players):
-                player = players[i]
-                is_current = players.index(player) == current_player_index
+            if i < len(row_players):
+                player = row_players[i]
+                is_current = all_players.index(player) == current_player_index
                 color = player_colors[player]
                 is_last = player == last_player
                 player_panel = TableRenderer._get_player_panel(
@@ -69,15 +69,16 @@ class TableRenderer:
         table.add_row(*row)
 
     @staticmethod
-    def _add_side_players(table: Table, players: List[Player], current_player_index: int,
+    def _add_side_players(table: Table, side_players: List[Player], current_player_index: int,
                           player_colors: Dict[Player, str], last_player: Optional[Player],
-                          last_bet: Optional[Tuple[int, int]]) -> None:
-        left_player = players[0] if len(players) > 0 else None
-        right_player = players[1] if len(players) > 1 else None
+                          last_bet: Optional[Tuple[int, int]], all_players: List[Player]) -> None:
+        left_player = side_players[0] if side_players else None
+        right_player = side_players[1] if len(side_players) > 1 else None
 
         left_panel = TableRenderer._get_player_panel(
             left_player,
-            left_player and players.index(left_player) == current_player_index,
+            left_player and all_players.index(
+                left_player) == current_player_index,
             player_colors[left_player] if left_player else "",
             left_player == last_player,
             last_bet
@@ -85,7 +86,7 @@ class TableRenderer:
 
         right_panel = TableRenderer._get_player_panel(
             right_player,
-            right_player and players.index(
+            right_player and all_players.index(
                 right_player) == current_player_index,
             player_colors[right_player] if right_player else "",
             right_player == last_player,
@@ -98,9 +99,9 @@ class TableRenderer:
     def _get_player_panel(player: Player, is_current: bool, color: str, is_last: bool, last_bet: Optional[Tuple[int, int]]) -> Panel:
         player_text = Text()
         if is_current:
-            player_text.append("-> ", style="bold")
+            player_text.append("-> ", style="green")
         player_text.append(f"{player.name}\n", style="bold")
-        player_text.append(f"Dados: {len(player.dice)}")
+        player_text.append(f"{len(player.dice)} dados")
         if is_last and last_bet:
             player_text.append(
                 f"\n{last_bet[0]} {TableRenderer._get_pinta_name(last_bet[1])}", style="bold red")
@@ -108,7 +109,7 @@ class TableRenderer:
 
     @staticmethod
     def _get_pinta_name(value: int) -> str:
-        pinta_names = {1: "as", 2: "tontos", 3: "trenes",
+        pinta_names = {1: "ases", 2: "tontos", 3: "trenes",
                        4: "cuadras", 5: "quinas", 6: "sextas"}
         return pinta_names.get(value, str(value))
 
