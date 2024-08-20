@@ -15,6 +15,9 @@ class TableRenderer:
     COLORS: List[str] = ["red", "green", "yellow",
                          "blue", "magenta", "cyan", "white"]
 
+    def __init__(self):
+        self.player_colors: Dict[Player, str] = {}
+
     @staticmethod
     def render_table(players: List[Player], current_player_index: int, last_player: Optional[Player] = None, last_bet: Optional[Tuple[int, int]] = None) -> Table:
         table = Table(show_header=False, show_edge=False,
@@ -23,7 +26,7 @@ class TableRenderer:
         for _ in range(3):
             table.add_column(justify="center", width=24)
 
-        player_colors = TableRenderer._assign_unique_colors(players)
+        player_colors = TableRenderer._assign_colors(players)
 
         top_row = players[:3]
         middle_row = players[3:5]
@@ -44,11 +47,20 @@ class TableRenderer:
         return table
 
     @staticmethod
-    def _assign_unique_colors(players: List[Player]) -> Dict[Player, str]:
-        colors = TableRenderer.COLORS * \
-            (len(players) // len(TableRenderer.COLORS) + 1)
-        random.shuffle(colors)
-        return {player: colors[i] for i, player in enumerate(players)}
+    def _assign_colors(players: List[Player]) -> Dict[Player, str]:
+        if not hasattr(TableRenderer, 'player_colors'):
+            TableRenderer.player_colors = {}
+
+        for player in players:
+            if player not in TableRenderer.player_colors:
+                available_colors = [
+                    c for c in TableRenderer.COLORS if c not in TableRenderer.player_colors.values()]
+                if not available_colors:
+                    available_colors = TableRenderer.COLORS
+                TableRenderer.player_colors[player] = random.choice(
+                    available_colors)
+
+        return TableRenderer.player_colors
 
     @staticmethod
     def _add_player_row(table: Table, row_players: List[Player], current_player_index: int,
@@ -105,7 +117,7 @@ class TableRenderer:
         if is_last and last_bet:
             player_text.append(
                 f"\n{last_bet[0]} {TableRenderer._get_pinta_name(last_bet[1])}", style="bold red")
-        return Panel(player_text, border_style=color, expand=False)
+        return Panel(player_text, border_style=color, expand=False, box=box.HEAVY)
 
     @staticmethod
     def _get_pinta_name(value: int) -> str:

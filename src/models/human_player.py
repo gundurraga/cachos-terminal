@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 class HumanPlayer(Player):
     def __init__(self, name: str):
-        super().__init__(name)
+        capitalized_name = ' '.join(word.capitalize() for word in name.split())
+        super().__init__(capitalized_name)
         self.input_handler: InputHandler = InputHandler()
         logger.info(f"Jugador humano '{self.name}' inicializado.")
 
