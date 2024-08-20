@@ -14,12 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Game:
     def __init__(self, num_ai_players: int, renderer: Renderer):
-        if not isinstance(num_ai_players, int) or num_ai_players < 1:
-            raise ValueError(
-                "El número de jugadores AI debe ser un entero positivo.")
-        if not isinstance(renderer, Renderer):
-            raise TypeError(
-                "El renderizador debe ser una instancia de Renderer.")
+        self._validate_inputs(num_ai_players, renderer)
 
         self.renderer: Renderer = renderer
         self.player_manager: PlayerManager = PlayerManager(
@@ -28,6 +23,15 @@ class Game:
         self.round_manager: RoundManager = RoundManager(
             self.player_manager, self.renderer)
         logger.info(f"Juego inicializado con {num_ai_players} jugadores AI.")
+
+    @staticmethod
+    def _validate_inputs(num_ai_players: int, renderer: Renderer) -> None:
+        if not isinstance(num_ai_players, int) or num_ai_players < 1:
+            raise ValueError(
+                "El número de jugadores AI debe ser un entero positivo.")
+        if not isinstance(renderer, Renderer):
+            raise TypeError(
+                "El renderizador debe ser una instancia de Renderer.")
 
     def get_players(self) -> List[Player]:
         return self.player_manager.players
@@ -48,15 +52,18 @@ class Game:
             while not self.player_manager.check_game_over():
                 self.round_manager.play_round()
 
-            winner: Optional[Player] = self.player_manager.get_winner()
-            if winner:
-                self.renderer.display_winner(winner)
-                logger.info(f"Juego terminado. Ganador: {winner.name}")
-            else:
-                logger.error("El juego terminó sin un ganador.")
-                self.renderer.display_error("El juego terminó sin un ganador.")
+            self._handle_game_end()
 
         except Exception as e:
             logger.error(f"Error inesperado durante el juego: {str(e)}")
             self.renderer.display_error(
                 f"Ha ocurrido un error inesperado: {str(e)}")
+
+    def _handle_game_end(self) -> None:
+        winner: Optional[Player] = self.player_manager.get_winner()
+        if winner:
+            self.renderer.display_winner(winner)
+            logger.info(f"Juego terminado. Ganador: {winner.name}")
+        else:
+            logger.error("El juego terminó sin un ganador.")
+            self.renderer.display_error("El juego terminó sin un ganador.")
